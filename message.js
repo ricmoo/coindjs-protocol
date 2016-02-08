@@ -19,7 +19,7 @@ function hash256(data) {
  *  Given a binary payload return the number of bytes that yield exactly one
  *  message, or null if there is not a complete message
  */
-function FirstAvailableMessageLength(binaryData) {
+function firstAvailableMessageLength(binaryData) {
     if (binaryData.length < 20) {
         return null;
     }
@@ -36,7 +36,7 @@ function FirstAvailableMessageLength(binaryData) {
 /**
  *  Given a binary payload, determine the message type and extract the details.
  */
-function MessageFromBinary(binaryData, messageTypes) {
+function messageFromBinary(binaryData, messageTypes) {
     if (!messageTypes) {
         messageTypes = StandardMessageTypes;
     }
@@ -55,11 +55,11 @@ function MessageFromBinary(binaryData, messageTypes) {
 
 
 /**
- *  DefineMessage meta-class
+ *  defineMessage meta-class
  *  This generates classes that represent messages with a given command and
  *  set of properties, each with a property type.
  */
-function DefineMessage(command, properties) {
+function defineMessage(command, properties) {
 
     /**
      * Constructs a new message from values
@@ -195,11 +195,11 @@ var propertiesLocate = [
 
 // Messages
 
-var addr = DefineMessage('addr', [
+var addr = defineMessage('addr', [
     ['addr_list', (new format.FormatList(format.NetworkAddress, null, 1000))],
 ]);
 
-var alert = DefineMessage('alert', [
+var alert = defineMessage('alert', [
     ['payload', format.VarString],
     ['signature', format.VarString],
 ])
@@ -211,7 +211,7 @@ alert.prototype.info = function() {
     throw Errors(Errors.NotImplmented, {object: 'alert', method: 'info'});
 }
 
-var block = DefineMessage('block', [
+var block = defineMessage('block', [
     ['version', format.UInt32],
     ['prev_block', format.Bytes32],
     ['merkle_root', format.Bytes32],
@@ -221,44 +221,44 @@ var block = DefineMessage('block', [
     ['txns', new format.FormatList(format.Tx)],
 ])
 
-var getaddr = DefineMessage('getaddr', []);
+var getaddr = defineMessage('getaddr', []);
 
-var getblocks = DefineMessage('getblocks', propertiesLocate);
+var getblocks = defineMessage('getblocks', propertiesLocate);
 
-var getdata = DefineMessage('getdata', propertiesInventory);
+var getdata = defineMessage('getdata', propertiesInventory);
 
-var getheaders = DefineMessage('getheaders', propertiesLocate);
+var getheaders = defineMessage('getheaders', propertiesLocate);
 
-var headers = DefineMessage('headers', [
+var headers = defineMessage('headers', [
     ['headers', new format.FormatList(format.BlockHeader)],
 ]);
 
-var inv = DefineMessage('inv', propertiesInventory);
+var inv = defineMessage('inv', propertiesInventory);
 
-var mempool = DefineMessage('mempool', [])
+var mempool = defineMessage('mempool', [])
 
-var notfound = DefineMessage('notfound', propertiesInventory);
+var notfound = defineMessage('notfound', propertiesInventory);
 
-var ping = DefineMessage('ping', propertiesNonce);
+var ping = defineMessage('ping', propertiesNonce);
 
-var pong = DefineMessage('pong', propertiesNonce);
+var pong = defineMessage('pong', propertiesNonce);
 
-var reject = DefineMessage('reject', [
+var reject = defineMessage('reject', [
     ['message', format.VarString],
     ['ccode', format.UInt8],
     ['reason', format.VarString],
 ]);
 
-var tx = DefineMessage('tx', [
+var tx = defineMessage('tx', [
     ['version', format.UInt32],
     ['tx_in', new format.FormatList(format.TxIn, 1)],
     ['tx_out', new format.FormatList(format.TxOut, 1)],
     ['lock_time', format.UInt32],
 ]);
 
-var verack = DefineMessage('verack', []);
+var verack = defineMessage('verack', []);
 
-var version = DefineMessage(
+var version = defineMessage(
     'version',
     [
         ['version', format.Int32],
@@ -275,16 +275,19 @@ var version = DefineMessage(
 
 
 // Some slightly special messages required for AuxPoW
-
-var auxpow_headers = DefineMessage('headers', [
+var auxpow_headers = defineMessage('headers', [
     ['headers', new format.FormatList(format.BlockHeaderDetectAuxPoW)],
 ]);
 
 
-// This generates a map opject of commands to message parsers to optionally
-// pass into MessageFromBinary
-function DefaultMessageTypes(auxpow) {
-    var messageTypes = {
+// Public Interface
+module.exports = {
+    defineMessage: defineMessage,
+
+    firstAvailableMessageLength: firstAvailableMessageLength,
+    messageFromBinary: messageFromBinary,
+
+    messages: {
         addr: addr,
         alert: alert,
         block: block,
@@ -302,34 +305,11 @@ function DefaultMessageTypes(auxpow) {
         tx: tx,
         verack: verack,
         version: version,
-    };
 
-    if (auxpow) {
-        messageTypes.headers = auxpow_headers;
-    }
-
-    return messageTypes;
-}
-
-
-var StandardMessageTypes = DefaultMessageTypes(false);
-
-
-// Public Interface
-module.exports = {
-    DefineMessage: DefineMessage,
-    FirstAvailableMessageLength: FirstAvailableMessageLength,
-    MessageFromBinary: MessageFromBinary,
-
-    DefaultMessageTypes: DefaultMessageTypes,
-
-    format: format,
-
-    commands: StandardMessageTypes,
-
-    auxpow_commands: {
         auxpow_headers: auxpow_headers,
     },
+
+    format: format,
 }
 
 
@@ -356,7 +336,7 @@ if (require.main == module) {
     for (var i = 0; i < messages.length; i++) {
         var m = messages[i];
         //console.log("Message: ", m.toString('hex'));
-        var v = MessageFromBinary(m);
+        var v = messageFromBinary(m);
         //console.log("Value: ", v.values.headers);
         var b = v.toBinary(new Buffer('f9beb4fe', 'hex'));
         //console.log("Binary: ", b.toString('hex'));

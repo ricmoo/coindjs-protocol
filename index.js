@@ -1,6 +1,11 @@
 var message = require('./message.js');
-var format = require('./format.js');
+
 module.exports = {
-    format: format,
-    message: message,
+    format: message.format,
+
+    defineMessage: message.defineMessage,
+    firstAvailableMessageLength: message.firstAvailableMessageLength,
+    messageFromBinary: message.messageFromBinary,
+
+    messages: message.messages,
 }
