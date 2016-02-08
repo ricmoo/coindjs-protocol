@@ -12,20 +12,55 @@ Install
 npm install coindjs-protocol
 ```
 
-Converting a Message to Binary
-------------------------------
+Build a Message
+---------------
 
 This is the method *bitcoind* uses today, which operates against a list of trusted DNS seeds included in the *bitcoind* source code.
 
 ```javascript
+var timestamp = (new Date()).getTime();
+var versionMessage = new protocol.messages.version({
+    version: 1,
+    services: 1,
+    timestamp: timestamp,
+    addr_recv: {
+        timestamp: timestamp,
+        services: 1,
+        address: '127.0.0.1',
+        port: 8883
+    },
+    addr_from: {
+        timestamp: timestamp,
+        services: 1,
+        address: '127.0.0.1',
+        port: 8883
+    },
+    nonce: (new Buffer('0123456789abcdef', 'hex')),
+    user_agent: "SomeAgent/0.9",
+    start_height: 100000
+});
+
+// When we create the message, we specify the magic number to put in the header
+var bitcoinMagicNumber = new Buffer('f9beb4d9', 'hex');
+console.log(versionMessage.toBinary(bitcoinMagicNumber).toString('hex'))
 ```
+
+
+Parse a Binary Message
+----------------------
+
+```javascript
+var getblocksMessage = new Buffer('f9beb4d9676574626c6f636b73000000650000001801d1880200000002333433343334333433343334333433343334333433343334333433343334333434353435343534353435343534353435343534353435343534353435343534353132313231323132313231323132313231323132313231323132313231323132', 'hex');
+console.log(protocol.messageFromBinary(getblocksMessage, protocol.messages))
+```
+
 
 Converting a Message from Binary
 --------------------------------
 
-This method is no longer used by the *Bitcoin* network, but is still popular with alt-coins that were forked from *bitcoind* quite early on, such as *Namecoin*.
- 
 ```javascript
+var pingHex = new Buffer('3132333470696e6700000000000000000800000070912a883031323334353637', 'hex');
+console.log(protocol.messages.ping.fromBinary(pingHex));
 ```
 
 
