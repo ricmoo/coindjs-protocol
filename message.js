@@ -38,9 +38,8 @@ function firstAvailableMessageLength(binaryData) {
  */
 function messageFromBinary(binaryData, messageTypes) {
     if (!messageTypes) {
-        messageTypes = StandardMessageTypes;
+        messageTypes = standardMessages;
     }
-
     var command = format.Command.fromBinary({buffer: binaryData, offset: 4});
 
     var result = null;
@@ -77,7 +76,6 @@ function defineMessage(command, properties) {
                 try {
                     propertyFormat.toBinary(value);
                 } catch (error) {
-                    console.log(propertyName, error);
                     throw error;
                 }
 
@@ -279,6 +277,39 @@ var auxpow_headers = defineMessage('headers', [
     ['headers', new format.FormatList(format.BlockHeaderDetectAuxPoW)],
 ]);
 
+var standardMessages = {
+    addr: addr,
+    alert: alert,
+    block: block,
+    getaddr: getaddr,
+    getblocks: getblocks,
+    getdata: getdata,
+    getheaders: getheaders,
+    headers: headers,
+    inv: inv,
+    mempool: mempool,
+    notfound: notfound,
+    ping: ping,
+    pong: pong,
+    reject: reject,
+    tx: tx,
+    verack: verack,
+    version: version,
+};
+
+var extendedMessages = {
+    auxpow_headers: auxpow_headers,
+}
+
+function merge(objects) {
+    var result = {};
+    for (var i = 0; i < objects.length; i++) {
+        for (var key in objects[i]) {
+            result[key] = objects[i][key];
+        }
+    }
+    return result;
+}
 
 // Public Interface
 module.exports = {
@@ -287,27 +318,9 @@ module.exports = {
     firstAvailableMessageLength: firstAvailableMessageLength,
     messageFromBinary: messageFromBinary,
 
-    messages: {
-        addr: addr,
-        alert: alert,
-        block: block,
-        getaddr: getaddr,
-        getblocks: getblocks,
-        getdata: getdata,
-        getheaders: getheaders,
-        headers: headers,
-        inv: inv,
-        mempool: mempool,
-        notfound: notfound,
-        ping: ping,
-        pong: pong,
-        reject: reject,
-        tx: tx,
-        verack: verack,
-        version: version,
-
-        auxpow_headers: auxpow_headers,
-    },
+    standardMessages: standardMessages,
+    extendedMessages: extendedMessages,
+    messages: merge([standardMessages, extendedMessages]),
 
     format: format,
 }
