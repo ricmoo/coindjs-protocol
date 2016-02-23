@@ -12,6 +12,10 @@
     "protocol",
     "messages"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ricmoo/coindjs-protocol.git"
+  },
   "author": "Richard Moore <me@ricmoo.com>",
   "license": "MIT"
 }
